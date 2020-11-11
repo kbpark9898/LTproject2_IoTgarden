@@ -1,3 +1,4 @@
 module.exports={
-    mongoURI:process.env.MONGO_URI
+    mongoURI: "YOUR mongoDB URI"
 }
+// if you use heroku, you can use environment variable process.env.MONGO_URI"
