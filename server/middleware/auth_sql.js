@@ -1,10 +1,10 @@
 var mysql = require('mysql');
 const session = require('express-session')
 var connection = mysql.createConnection({
-    host: 'testdb.cv88vjxvcd70.us-east-1.rds.amazonaws.com',
+    host: '',
     user: 'admin',
     port: 3306,
-    password: 'park0130',
+    password: '',
     database: 'testdb',
     connectionLimit: 30
   });
