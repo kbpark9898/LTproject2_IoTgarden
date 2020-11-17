@@ -3,9 +3,8 @@ const app = express()
 const port = 6000
 const cryptoM=require('./config/crypto')
 const bodyParser = require('body-parser')
-const jwt = require('./modules/token')
+
 const cookieParser = require('cookie-parser')
-const {auth} = require('./middleware/auth')
 const mysql = require('mysql')
 const session = require('express-session')
 const {auth} = require('./middleware/auth_sql')
@@ -20,27 +19,38 @@ app.use(session({
 }));
 
 var connection = mysql.createConnection({
-  host: '',
+  host: 'testdb.cv88vjxvcd70.us-east-1.rds.amazonaws.com',
   user: 'admin',
   port: 3306,
-  password: '',
-  database: 'testdb',
+  password: 'park0130',
+  database: 'test',
   connectionLimit: 30
 });
-
+app.get('api/user/test', (req,res)=>{
+  var sql_query = "show tables"
+  connection.query(sql_query, function(err, rows){
+    if(err){
+      console.log("db connection error")
+      return res.status(400).send(err)
+    }else{
+      console.log("db connection success")
+      console.log(rows)
+      return res.status(200).send(rows)
+    }
+  })
+})
 app.post('/api/user/register', (req, res)=>{
   console.log(req.body);
   var user_id = req.body.user_id;
   var user_pw = req.body.user_pw;
   var user_email = req.body.user_email;
-  var user_name = req.body.user_name;
   var user_phone = req.body.user_phone;
   var sql_query = "SELECT * FROM users where user_id=?";
   connection.query(sql_query, user_id, function(err, rows){
     if(rows.length ==0){
       user_pw = cryptoM.encrypt(user_pw);
-      var register_query = "INSERT INTO users(user_id, user_pw, user_email, user_name, user_phone) values (?,?,?,?,?)";
-      var register_data=[user_id, user_pw, user_email, user_name, user_phone]
+      var register_query = "INSERT INTO users(user_id, user_pw, user_email, user_phone) values (?,?,?,?)";
+      var register_data=[user_id, user_pw, user_email, user_phone]
       connection.query(register_query, register_data, function(err){
         if(err){
           console.log("user register fail - insert error")
