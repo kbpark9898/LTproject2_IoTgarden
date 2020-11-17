@@ -3,12 +3,13 @@ const app = express()
 const port = 6000
 const cryptoM=require('./config/crypto')
 const bodyParser = require('body-parser')
-
+const AWS = require('aws-sdk')
 const cookieParser = require('cookie-parser')
 const mysql = require('mysql')
 const session = require('express-session')
 const {auth} = require('./middleware/auth_sql')
 const { default: Axios } = require('axios')
+AWS.config.loadFromPath(__dirname+"/config/awsconfig.json");
 app.use(bodyParser.urlencoded({extended:'true'}))
 app.use(bodyParser.json())
 app.use(cookieParser())
@@ -17,16 +18,16 @@ app.use(session({
   saveUninitialized: true,
   resave: true
 }));
-
+//ss
 var connection = mysql.createConnection({
-  host: 'testdb.cv88vjxvcd70.us-east-1.rds.amazonaws.com',
-  user: 'admin',
+  host: "",
+  user: "",
   port: 3306,
-  password: 'park0130',
-  database: 'test',
+  password: "",
+  database: "",
   connectionLimit: 30
 });
-app.get('api/user/test', (req,res)=>{
+app.get('/api/user/test', (req,res)=>{
   var sql_query = "show tables"
   connection.query(sql_query, function(err, rows){
     if(err){
@@ -132,15 +133,31 @@ const dummyData={
 
 }
 app.get('/api/user/rpiinfo', (req, res)=>{
-  var rpiList = req.body.list;
+  var iotdata = new AWS.IotData({
+    endpoint: 'your endpoint'});
+    var params = {
+      thingName: 'RPiTest', /* required */
+    };
+  iotdata.getThingShadow(params, function (err, data) {
+    if (err){
+      console.log(err, err.stack);
+      return res.status(400).send(err);
+    } // an error occurred
+    else{
+      console.log(data);
+      return res.status(200).send(data)
+    }           // successful response
+  });
+  // var rpiList = req.body.list;
   var result=[];
-  for(var i=0; i<=rpiList.length; i++){
-    result.push(Axios.get('https://endpoint/things/thingName/shadow?name=shadowName'))
-  }
+  // for(var i=0; i<=rpiList.length; i++){
+  //   result.push(Axios.get('https://a3lvcxeychr6yu-ats.iot.us-east-1.amazonaws.com/things/RPiTest/shadow'))
+  // }
   //list 에 있는 rpi 이름정보를 바탕으로 aws iot core의 shadow 정보를 모두 받아올것.
   //받아온 shoadow json 정보를 그대로 res.json(result)를 통해 반환할것
   // 이 구현이 끝나면 rpilist에 이 기능을 합치고 rpiinfo 부분은 그냥 삭제할것
-  return res.status(200).send(result)
+  // result.push(Axios.get('https://a3lvcxeychr6yu-ats.iot.us-east-1.amazonaws.com/things/RPiTest/'))
+  // return res.status(200).send(result)
 })
 app.post('/api/user/rpiregister', (req, res)=>{
 
@@ -154,5 +171,7 @@ app.get('/api/user/auth', auth, (req, res)=>{
     isAuth:true,
   })
 })
+
+app.get('/api/hello',(req, res)=>res.send("안녕하세요~"))
 //12강 복습할것!
 app.listen(port, () => console.log(`Example app listening at http://localhost:${port}`))
